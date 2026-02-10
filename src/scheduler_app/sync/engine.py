@@ -69,7 +69,10 @@ class SyncEngine:
         unified_id = self.mapping_store.get_unified_id(record.source, record.source_id)
         current = self.repository.get(unified_id) if unified_id else None
 
-        if record.deleted and self.policy.propagate_deletes:
+        if record.deleted:
+            if not self.policy.propagate_deletes:
+                return None
+
             if unified_id:
                 tombstone = self._build_tombstone(record, unified_id)
                 saved = self.repository.upsert(tombstone)

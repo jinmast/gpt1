@@ -24,6 +24,14 @@ class MappingStore:
         return dict(self._by_unified.get(unified_id, {}))
 
     def upsert(self, source: str, source_id: str, unified_id: str) -> Mapping:
+        previous_unified_id = self._by_source.get((source, source_id))
+        if previous_unified_id and previous_unified_id != unified_id:
+            previous_source_map = self._by_unified.get(previous_unified_id)
+            if previous_source_map:
+                previous_source_map.pop(source, None)
+                if not previous_source_map:
+                    self._by_unified.pop(previous_unified_id, None)
+
         self._by_source[(source, source_id)] = unified_id
         per_source = self._by_unified.setdefault(unified_id, {})
         per_source[source] = source_id
